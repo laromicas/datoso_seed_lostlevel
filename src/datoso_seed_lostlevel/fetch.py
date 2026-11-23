@@ -4,7 +4,7 @@ from datetime import datetime
 
 from datoso.configuration.folder_helper import Folders
 from datoso.configuration.logger import logger
-from datoso.helpers.download import downloader
+from datoso.helpers.download import DownloadProgress, downloader
 from datoso.helpers.file_utils import move_path, remove_folder
 
 from datoso_seed_lostlevel import __prefix__
@@ -26,7 +26,8 @@ def download_dat_files(download_url: str, folder_helper: Folders) -> None:
     system_tz = datetime.now().astimezone().tzinfo
     destination_file = f'lost-level-archive_{datetime.now(system_tz).strftime("%Y%m%d")}.zip'
     logger.info(f'Downloading DAT files from {download_url} to {folder_helper.download / destination_file}\n')
-    downloader(url=download_url, destination=folder_helper.download / destination_file, reporthook=None)
+    with DownloadProgress() as progress:
+        downloader(url=download_url, destination=folder_helper.download / destination_file, progress=progress)
     #unzip files to folder_helper.dats
     logger.info(f'Extracting DAT files to {folder_helper.dats / "tmp"}\n')
     with zipfile.ZipFile(folder_helper.download / destination_file, 'r') as zip_ref:
